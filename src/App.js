@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import MoviesList from './components/MoviesList';
 import './App.css';
@@ -7,9 +7,8 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [retryInterval, setRetryInterval] = useState(null);
 
-  const fetchMovies = async () => {
+  const fetchMovies = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -27,22 +26,14 @@ function App() {
       setMovies(transformedMovies);
     } catch (error) {
       setError(error.message);
-      setRetryInterval(setTimeout(fetchMovies, 5000));
     }
     setIsLoading(false);
-  };
-
-  const cancelRetry = () => {
-    clearTimeout(retryInterval);
-  };
+  }, []);
 
   useEffect(() => {
+    console.log("Fetched")
     fetchMovies();
-
-    return () => {
-      clearTimeout(retryInterval);
-    };
-  }, []);
+  }, [fetchMovies]);
 
   let content = <p>No Movies Found</p>;
   if (movies.length > 0) {
@@ -52,8 +43,6 @@ function App() {
     content = (
       <div>
         <p>{error}</p>
-        <button onClick={fetchMovies}>Retry</button>
-        <button onClick={cancelRetry}>Cancel Retry</button>
       </div>
     );
   }
